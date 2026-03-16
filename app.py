@@ -6,7 +6,7 @@ from functools import wraps
 from dotenv import load_dotenv
 load_dotenv()
 
-from flask import Flask, jsonify, render_template, request, abort
+from flask import Flask, jsonify, render_template, request, abort, redirect, url_for
 from prometheus_client import (
     Counter,
     Histogram,
@@ -140,6 +140,22 @@ def index():
 
 
 # ---------------------------------------------------------------------------
+# Admin UI
+# ---------------------------------------------------------------------------
+@app.route("/admin")
+@track_metrics
+def admin():
+    if not ENABLE_ADMIN:
+        abort(403)
+    return render_template(
+        "admin.html",
+        widgets=WIDGETS,
+        title=CATALOG_TITLE,
+        enable_admin=ENABLE_ADMIN,
+    )
+
+
+# ---------------------------------------------------------------------------
 # REST API
 # ---------------------------------------------------------------------------
 @app.route("/api/widgets")
@@ -188,6 +204,50 @@ def api_create_widget():
     WIDGETS.append(widget)
     WIDGETS_GAUGE.set(len(WIDGETS))
     return jsonify(widget), 201
+
+
+@app.route("/api/widgets/<int:widget_id>", methods=["PUT"])
+@track_metrics
+def api_update_widget(widget_id):
+    if not ENABLE_ADMIN:
+        return jsonify({"error": "Admin API is disabled"}), 403
+
+    key = request.headers.get("X-API-Key", "")
+    if key != ADMIN_API_KEY:
+        return jsonify({"error": "Invalid or missing API key"}), 401
+
+    widget = _find_widget(widget_id)
+    if widget is None:
+        return jsonify({"error": "Not found"}), 404
+
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Request body must be JSON"}), 400
+
+    for field in ("name", "category", "price", "description"):
+        if field in data:
+            widget[field] = float(data[field]) if field == "price" else data[field]
+
+    return jsonify(widget), 200
+
+
+@app.route("/api/widgets/<int:widget_id>", methods=["DELETE"])
+@track_metrics
+def api_delete_widget(widget_id):
+    if not ENABLE_ADMIN:
+        return jsonify({"error": "Admin API is disabled"}), 403
+
+    key = request.headers.get("X-API-Key", "")
+    if key != ADMIN_API_KEY:
+        return jsonify({"error": "Invalid or missing API key"}), 401
+
+    widget = _find_widget(widget_id)
+    if widget is None:
+        return jsonify({"error": "Not found"}), 404
+
+    WIDGETS.remove(widget)
+    WIDGETS_GAUGE.set(len(WIDGETS))
+    return jsonify({"status": "deleted"}), 200
 
 
 # ---------------------------------------------------------------------------
