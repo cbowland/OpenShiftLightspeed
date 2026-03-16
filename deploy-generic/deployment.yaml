@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bowland-widget-catalog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bowland-widget-catalog
+  template:
+    metadata:
+      labels:
+        app: bowland-widget-catalog
+    spec:
+      containers:
+        - name: bowland-widget-catalog
+          image: quay.io/cbowland/bowland-widget-catalog:latest
+          ports:
+            - containerPort: 8080
