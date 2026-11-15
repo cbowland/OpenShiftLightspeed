@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — {{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <h1>{{ title }}</h1>
+      </div>
+      <nav>
+        <a href="/" class="badge">Back to Catalog</a>
+        <span class="badge admin">Admin</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- API Key -->
+    <div class="admin-section">
+      <label for="api-key">API Key</label>
+      <input type="password" id="api-key" placeholder="Enter your admin API key">
+    </div>
+
+    <!-- Add Widget Form -->
+    <div class="admin-section">
+      <h2>Add Widget</h2>
+      <form id="add-form" class="admin-form">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="text" name="category" placeholder="Category" required>
+        <input type="number" name="price" placeholder="Price" step="0.01" min="0" required>
+        <input type="text" name="description" placeholder="Description" required>
+        <button type="submit" class="btn btn-add">Add Widget</button>
+      </form>
+      <div id="add-message" class="message"></div>
+    </div>
+
+    <!-- Widget Table -->
+    <div class="admin-section">
+      <h2>Widgets ({{ widgets|length }})</h2>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="widget-table-body">
+          {% for w in widgets %}
+          <tr data-id="{{ w.id }}">
+            <td>{{ w.id }}</td>
+            <td><input type="text" value="{{ w.name }}" data-field="name"></td>
+            <td><input type="text" value="{{ w.category }}" data-field="category"></td>
+            <td><input type="number" value="{{ w.price }}" step="0.01" min="0" data-field="price"></td>
+            <td><input type="text" value="{{ w.description }}" data-field="description"></td>
+            <td class="actions">
+              <button class="btn btn-save" onclick="saveWidget({{ w.id }})">Save</button>
+              <button class="btn btn-delete" onclick="deleteWidget({{ w.id }})">Delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Bowland Widget Factory &mdash; Internal Catalog System</p>
+    </div>
+  </footer>
+
+  <script>
+    function getApiKey() {
+      return document.getElementById('api-key').value;
+    }
+
+    // Add widget
+    document.getElementById('add-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const msg = document.getElementById('add-message');
+      const body = {
+        name: form.name.value,
+        category: form.category.value,
+        price: parseFloat(form.price.value),
+        description: form.description.value,
+      };
+      const res = await fetch('/api/widgets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        msg.textContent = `Added widget #${data.id}`;
+        msg.className = 'message success';
+        form.reset();
+        setTimeout(() => location.reload(), 500);
+      } else {
+        msg.textContent = data.error || 'Failed to add widget';
+        msg.className = 'message error';
+      }
+    });
+
+    // Save (update) widget
+    async function saveWidget(id) {
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      const body = {};
+      row.querySelectorAll('input[data-field]').forEach(input => {
+        body[input.dataset.field] = input.dataset.field === 'price'
+          ? parseFloat(input.value) : input.value;
+      });
+      const res = await fetch(`/api/widgets/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        row.style.background = '#d1fae5';
+        setTimeout(() => row.style.background = '', 1000);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to save widget');
+      }
+    }
+
+    // Delete widget
+    async function deleteWidget(id) {
+      if (!confirm(`Delete widget #${id}?`)) return;
+      const res = await fetch(`/api/widgets/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-API-Key': getApiKey() },
+      });
+      if (res.ok) {
+        document.querySelector(`tr[data-id="${id}"]`).remove();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete widget');
+      }
+    }
+  </script>
+</body>
+</html>
