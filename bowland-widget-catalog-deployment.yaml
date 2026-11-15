@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bowland-widget-catalog
+  namespace: bowland-widget-factory
+  labels:
+    bowland.com/environment: prod
+    bowland.com/business-unit: retail
+    bowland.com/app-name: bowland-widget-catalog
+  annotations:
+    bowland.com/support-contact: team-alpha@bowland.com
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      bowland.com/app-name: bowland-widget-catalog
+  template:
+    metadata:
+      labels:
+        bowland.com/environment: prod
+        bowland.com/business-unit: retail
+        bowland.com/app-name: bowland-widget-catalog
+    spec:
+      containers:
+      - name: bowland-widget-catalog
+        image: quay.io/cbowland/bowland-widget-catalog:latest
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5

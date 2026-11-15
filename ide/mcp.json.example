@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "openshift": {
+      "type": "http",
+      "url": "https://mcp-server.apps.CLUSTER_DOMAIN/mcp"
+    }
+  }
+}

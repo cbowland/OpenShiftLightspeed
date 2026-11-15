@@ -1,0 +1,173 @@
+# Bowland Widget Factory "inventory" service: DELIBERATELY BROKEN demo variant.
+#
+# Used in demo Act 2 (live troubleshooting) and Act 4 (BYOK standards check).
+# Compare with ../deploy-generic/, which is the compliant version.
+#
+# Live failures, which Lightspeed should find in this order:
+#   1. Pod stuck in CreateContainerConfigError: the Deployment references
+#      secret key "apiToken", but the Secret only has "api-token".
+#   2. Route returns "Application is not available" (503): the namespace has
+#      default-deny-all with no allow-from-openshift-ingress policy.
+#
+# Bowland standards gaps (only visible once BYOK is enabled):
+#   - replicas: 1 (standard requires >= 2)
+#   - Deployment/pod missing bowland.com/business-unit label
+#   - Deployment missing bowland.com/support-contact annotation
+#   - container has no resources requests/limits
+#   - no livenessProbe / readinessProbe
+#   - securityContext missing capabilities.drop [ALL] and seccompProfile
+#
+# Reset with: ../../../setup/90-reset.sh  (or re-run setup/30-deploy-bowland.sh)
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bowland-inventory
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-config
+  namespace: bowland-inventory
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+data:
+  MESSAGE: "Bowland Widget Factory: Inventory service"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: inventory-secret
+  namespace: bowland-inventory
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+type: Opaque
+stringData:
+  api-token: "demo-token-not-a-real-secret"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory
+  namespace: bowland-inventory
+  labels:
+    bowland.com/environment: dev
+    bowland.com/app-name: inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      bowland.com/app-name: inventory
+  template:
+    metadata:
+      labels:
+        bowland.com/environment: dev
+        bowland.com/app-name: inventory
+    spec:
+      containers:
+        - name: inventory
+          image: quay.io/openshift/hello-openshift:latest
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: MESSAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: inventory-config
+                  key: MESSAGE
+            - name: API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: inventory-secret
+                  key: apiToken
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory
+  namespace: bowland-inventory
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+spec:
+  type: ClusterIP
+  selector:
+    bowland.com/app-name: inventory
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: inventory
+  namespace: bowland-inventory
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+spec:
+  to:
+    kind: Service
+    name: inventory
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: bowland-inventory
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: bowland-inventory
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+# NOTE: allow-from-openshift-ingress is intentionally missing (failure #2).

@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: restrict-postgres-access
+  namespace: aardvark # Replace with your project namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: fedora-postgres-vm # Replace with the label of your PostgreSQL pod
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector: {} # Allows traffic from pods within the same namespace

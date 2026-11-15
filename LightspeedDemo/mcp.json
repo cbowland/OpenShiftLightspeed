@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+      "openshift-lightspeed": {
+        "command": "uv",
+        "args": ["--directory", "/Users/cbowland/workspace/ols-mcp", "run", "python", "-m", "ols_mcp.server"],
+        "env": {
+          "OLS_API_URL": "https://ols-route-openshift-lightspeed.apps.CLUSTER_DOMAIN",
+          "OLS_API_TOKEN": "",
+          "OLS_TIMEOUT": "30.0",
+          "OLS_VERIFY_SSL": "true"
+        }
+      }
+    }
+  }

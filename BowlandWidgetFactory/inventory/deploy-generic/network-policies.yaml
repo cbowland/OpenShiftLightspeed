@@ -1,0 +1,78 @@
+# Bowland baseline: default-deny-all uses podSelector: {} and affects every pod in the
+# namespace. Use a dedicated project, or ensure every workload has its own allow policies
+# before applying this file alongside other apps.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-openshift-ingress
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+spec:
+  podSelector:
+    matchLabels:
+      bowland.com/app-name: inventory
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+spec:
+  podSelector:
+    matchLabels:
+      bowland.com/app-name: inventory
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}

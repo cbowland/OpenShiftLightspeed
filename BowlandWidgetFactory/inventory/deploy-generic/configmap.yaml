@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-config
+  labels:
+    bowland.com/environment: dev
+    bowland.com/business-unit: retail
+    bowland.com/app-name: inventory
+immutable: true
+data:
+  MESSAGE: "Bowland Widget Factory — Inventory service (placeholder workload)."

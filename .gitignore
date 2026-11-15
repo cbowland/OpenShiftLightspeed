@@ -1,0 +1,17 @@
+# Local secrets / per-cluster config
+**/demo.env
+**/.env
+**/.mcp.json
+*.bak
+
+# Local AI/editor files
+.vscode/
+.codex/
+**/.claude/settings.local.json
+CLAUDE.local.md
+
+# Python / OS
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
