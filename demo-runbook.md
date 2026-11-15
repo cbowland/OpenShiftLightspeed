@@ -14,7 +14,7 @@ escalating demos: docs → live troubleshooting → *your* standards → the dev
 | Path | Purpose |
 |---|---|
 | `setup/` | Numbered scripts: preflight, install OLS, OLSConfig, deploy workloads, MCP server, reset |
-| `BowlandWidgetFactory/inventory/demo-broken/` | Broken + non-compliant `inventory` app (Acts 2 and 4) and `fix-inventory.sh` backup |
+| `BowlandWidgetFactory/inventory/demo-broken/` | Broken + non-compliant `inventory` app (Acts 2 and 3) and `fix-inventory.sh` backup |
 | `BowlandWidgetFactory/bowland-widget-catalog/` | Compliant "good" app |
 | `../LightspeedBYOKDemo/` (separate repo: [cbowland/LightspeedBYOKDemo](https://github.com/cbowland/LightspeedBYOKDemo), cloned next to this folder) | Standards markdown, RAG image build flow, `patch-` / `unpatch-olsconfig-rag.sh` |
 | `ide/` | MCP server for Red Hat OpenShift: client config + IDE prompts |
@@ -33,7 +33,7 @@ escalating demos: docs → live troubleshooting → *your* standards → the dev
    export LLM_API_TOKEN=...         # only if no OLSConfig exists yet
    setup/20-apply-olsconfig.sh      # creates or normalizes OLSConfig (introspection on, no BYOK)
    setup/30-deploy-bowland.sh       # catalog (good) + inventory (broken)
-   setup/40-install-mcp-server.sh   # Act 5 IDE; needs helm (brew install helm)
+   setup/40-install-mcp-server.sh   # Act 4 IDE; needs helm (brew install helm)
    ```
 4. **Build the BYOK image once** (`../LightspeedBYOKDemo/README.md`, steps 1–8; clone it first with `git clone https://github.com/cbowland/LightspeedBYOKDemo.git ../LightspeedBYOKDemo` if needed). Leave it pushed but **not** patched in.
 5. **Prepare the IDE repo** as described in `ide/README.md`.

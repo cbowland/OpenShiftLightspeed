@@ -44,7 +44,7 @@ if oc get deploy inventory -n "$INVENTORY_NS" >/dev/null 2>&1; then
   [[ "$key" == "apiToken" ]] && ok "inventory is in its broken starting state" || warn "inventory already fixed: run 90-reset.sh"
 fi
 
-echo "== MCP server for Red Hat OpenShift (Act 5, optional)"
+echo "== MCP server for Red Hat OpenShift (Act 4, optional)"
 oc get route -n "$MCP_NS" -o jsonpath='{range .items[*]}{"     https://"}{.spec.host}{"/mcp\n"}{end}' 2>/dev/null || true
 if [[ -n "$(oc get deploy -n "$MCP_NS" -o name 2>/dev/null)" ]]; then ok "MCP server deployed in $MCP_NS"
 else warn "MCP server not installed in $MCP_NS (40-install-mcp-server.sh). The openshift-mcp-server pod in $OLS_NAMESPACE is Lightspeed's built-in one, not the IDE endpoint"; fi

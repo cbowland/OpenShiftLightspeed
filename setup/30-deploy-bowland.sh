@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Deploy the Bowland Widget Factory demo workloads:
 #   - bowland-widget-catalog: the compliant "good" app (CATALOG_NS)
-#   - inventory: deliberately broken + non-compliant (INVENTORY_NS) for Acts 2 and 4
+#   - inventory: deliberately broken + non-compliant (INVENTORY_NS) for Acts 2 and 3
 source "$(dirname "$0")/lib.sh"
 need oc
 BWF="$DEMO_ROOT/BowlandWidgetFactory"

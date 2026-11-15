@@ -1,6 +1,6 @@
 # IDE act: MCP server for Red Hat OpenShift
 
-Act 5 of the demo shows a developer working in their editor. The assistant reaches
+Act 4 of the demo shows a developer working in their editor. The assistant reaches
 the cluster through the **MCP server for Red Hat OpenShift**. That server is
 documented in OCP 4.22 (AI applications > MCP server) as a **Technology Preview**,
 and it is installed with Helm by `../setup/40-install-mcp-server.sh`.
@@ -48,6 +48,6 @@ and it is installed with Helm by `../setup/40-install-mcp-server.sh`.
    every Bowland standard. Save them under ./deploy."*
 3. *"Compare the live inventory Deployment in bowland-inventory against
    ./standards and list every violation."* The IDE should report the same gaps
-   Lightspeed found in Act 4.
+   Lightspeed found in Act 3.
 
 Do not commit a `.mcp.json` that contains a real cluster hostname to a public repo.

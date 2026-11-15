@@ -1,6 +1,6 @@
 # Bowland Widget Factory "inventory" service: DELIBERATELY BROKEN demo variant.
 #
-# Used in demo Act 2 (live troubleshooting) and Act 4 (BYOK standards check).
+# Used in demo Act 2 (live troubleshooting) and Act 3 (BYOK standards check).
 # Compare with ../deploy-generic/, which is the compliant version.
 #
 # Live failures, which Lightspeed should find in this order:
