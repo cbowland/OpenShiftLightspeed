@@ -1,0 +1,17 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: bowland-widget-catalog
+  labels:
+    bowland.com/environment: prod
+    bowland.com/business-unit: sales
+    bowland.com/app-name: bowland-widget-catalog
+spec:
+  to:
+    kind: Service
+    name: bowland-widget-catalog
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
