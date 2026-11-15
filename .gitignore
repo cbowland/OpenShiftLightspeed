@@ -4,3 +4,8 @@ __pycache__/
 *.pyc
 .env
 *.egg-info/
+.vscode/
+.codex/
+.claude/settings.local.json
+CLAUDE.local.md
+.DS_Store
